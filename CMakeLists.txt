@@ -10,6 +10,11 @@ if (POLICY CMP0141)
 endif()
 
 project ("SiiliCam-obs")
+add_subdirectory("external/Logger")
+add_subdirectory("external/CommonTypes")
+add_subdirectory("external/NDIWrapper")
+add_subdirectory("external/obs-studio")
 
+add_subdirectory("Logger")
 # Include sub-projects.
 add_subdirectory ("SiiliCam-obs")

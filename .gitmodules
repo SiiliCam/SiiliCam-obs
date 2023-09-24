@@ -4,3 +4,9 @@
 [submodule "external/NDIWrapper"]
 	path = external/NDIWrapper
 	url = git@github.com:SiiliCam/NDIWrapper.git
+[submodule "external/CommonTypes"]
+	path = external/CommonTypes
+	url = git@github.com:SiiliCam/CommonTypes.git
+[submodule "external/Logger"]
+	path = external/Logger
+	url = git@github.com:SiiliCam/Logger.git
