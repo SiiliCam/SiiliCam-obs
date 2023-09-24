@@ -1,0 +1,6 @@
+[submodule "external/obs-studio"]
+	path = external/obs-studio
+	url = https://github.com/obsproject/obs-studio.git
+[submodule "external/NDIWrapper"]
+	path = external/NDIWrapper
+	url = git@github.com:SiiliCam/NDIWrapper.git
