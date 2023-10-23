@@ -1,17 +1,18 @@
 # SiiliCam-OBS
 
-SiiliCam-OBS is a Windows OBS plugin designed for seamless integration with [SiiliCam](https://github.com/SiiliCam). 
-SiiliCam sources are essentially phones running the SiiliCam application, transmitting video data over NDI. With this plugin, 
-you can directly display this NDI data in OBS by simply selecting the SiiliCam source from the list of available sources.
+SiiliCam-OBS is a Windows OBS plugin tailored specifically for seamless integration with [SiiliCam](https://github.com/SiiliCam). 
+SiiliCam sources are essentially phones running the SiiliCam application, transmitting video data over NDI. **Note: The current version of this plugin only supports SiiliCam sources and not generic NDI sources.**
+
+With this plugin, you can directly display this NDI data in OBS by simply selecting the SiiliCam source from the list of available sources.
 Additionally, you can manipulate the SiiliCam source using options like zoom and camera switch within OBS.
 The plugin also runs a REST server, allowing you to control it via HTTP requests.
 
 ## Features
 
+- **SiiliCam Specialization**: Designed to exclusively work with SiiliCam sources (**does not support generic NDI sources**).
 - **REST Server**: Control the SiiliCam-OBS source using HTTP requests.
 - **View SiiliCam Sources**: Display video data from phones running the SiiliCam application directly in OBS.
 - **Manipulate SiiliCam Sources**: Zoom, switch camera, and other functionalities are available and will be remembered for future sessions.
-- **NDI Source Compatibility**: Not limited to SiiliCam; can display any NDI source in OBS.
   
 ## Requirements
 
@@ -27,7 +28,7 @@ The plugin also runs a REST server, allowing you to control it via HTTP requests
 
 1. Open OBS and go to the "Tools" menu.
 2. Select the "SiiliCam-OBS" option.
-3. Add your SiiliCam sources or other NDI sources.
+3. Add your SiiliCam sources.
 4. Configure and control them as you wish.
 
 ## API
