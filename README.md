@@ -48,3 +48,107 @@ SiiliCam-OBS uses [NDIWrapper](https://github.com/SiiliCam/NDIWrapper) for NDI f
 ## Contributing and Support
 
 Feel free to open issues or pull requests if you have suggestions or run into any issues.
+
+
+## Rest-Api
+
+Certainly, here's a Markdown documentation for your API. This assumes that your API is RESTful and communicates over HTTP.
+
+---
+
+## SiiliCam-OBS REST API Documentation
+
+---
+
+### Table of Contents
+
+1. [Introduction](#introduction)
+2. [Get Sources](#get-sources)
+3. [Set NDI Source](#set-ndi-source)
+
+---
+
+### Introduction
+
+This REST API is a part of the SiiliCam-OBS plugin and allows you to get information about available sources and set NDI sources programmatically.
+
+---
+
+### Get Sources
+
+- **Endpoint**: `GET localhost:6042/getSources`
+- **Description**: Fetches information about available OBS sources and their selected NDI sources.
+- **Response Format**: JSON
+- **Response Codes**: 200 OK
+
+#### Example Response
+
+```json
+{
+    "sources": [
+        {
+            "obs_source_name": "Siili Cam Source",
+            "selected_ndi_source": "LOCALHOST (SIILISM-G991B1)"
+        },
+        {
+            "obs_source_name": "Siili Cam Source 2",
+            "selected_ndi_source": "LOCALHOST (SIILISM-G970F1)"
+        }
+    ],
+    "available_ndi_sources": [
+        "LOCALHOST (SIILISM-G970F1)",
+        "LOCALHOST (SIILISM-G991B1)"
+    ]
+}
+```
+
+---
+
+### Set NDI Source
+
+- **Endpoint**: `POST localhost:6042/setNDISource`
+- **Description**: Sets an NDI source for an existing OBS source.
+- **Request Body**: JSON format
+- **Response Format**: JSON
+- **Response Codes**: 
+  - 200 OK
+  - 404 Not Found (OBS source not found)
+  - 500 Internal Server Error (Failed to set NDI source)
+
+#### Example Request
+
+```json
+{
+    "obs_source_name": "Siili Cam Source 2",
+    "ndi_source": "LOCALHOST (SIILISM-G970F1)"
+}
+```
+
+#### Example Responses
+
+**Successful Update**
+
+```json
+{
+    "message": "Source updated successfully"
+}
+```
+
+**Failed Update**
+
+```json
+{
+    "message": "Failed to set NDI source"
+}
+```
+
+**OBS Source Not Found**
+
+```json
+{
+    "message": "OBS source not found"
+}
+```
+
+**Note**: If the source is trying to be set and it's non-existent, the receiver will wait until it comes up.
+
