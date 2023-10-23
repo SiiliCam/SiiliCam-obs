@@ -11,6 +11,17 @@
 std::vector<custom_data*> sharedCustomDataVector;
 std::mutex customDataMutex;
 
+static bool switch_camera_button_clicked(obs_properties_t* props, obs_property_t* property, void* data)
+{
+    struct custom_data* custom = reinterpret_cast<custom_data*>(data);
+    SwitchCamera cam{ true };
+    custom->ndiReceiver->sendMetadata(cam);
+    // Your logic for switching the camera here.
+    // For example: custom->ndiReceiver->switchCamera();
+
+    return true; // Return true to indicate that properties should be refreshed (optional).
+}
+
 static obs_properties_t* custom_get_properties(void* data) {
     Logger::log_info("custom properties called");
     blog(LOG_INFO, "custom properties called");
@@ -25,6 +36,7 @@ static obs_properties_t* custom_get_properties(void* data) {
     }
     obs_property_list_add_string(p, "TEST", "TEST");
     obs_properties_add_float_slider(props, "zoom_slider", "Zoom", 0.0, 1.0, 0.01);
+    obs_property_t* switch_camera_button = obs_properties_add_button(props, "switch_camera", "Switch Camera", switch_camera_button_clicked);
 
     return props;
 }
