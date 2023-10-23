@@ -1,4 +1,4 @@
-﻿// SiiliCam-obs.h : Include file for standard system include files,
+﻿/ SiiliCam-obs.h : Include file for standard system include files,
 // or project specific include files.
 
 #pragma once
