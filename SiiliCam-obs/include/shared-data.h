@@ -7,6 +7,7 @@
 #include <obs-module.h>
 
 struct custom_data {
+    std::string obs_source_name;
     std::string selected_ndi_source; // The NDI source selected by the user
     vec2 text_pos; // Current position of the text
     vec2 text_vel; // Velocity of the text (how much it moves per frame)

@@ -1,7 +1,8 @@
 ﻿#include <obs-module.h>
 #include <obs-frontend-api.h>
 #include <Processing.NDI.Lib.h>
-#include "restserver/RestServer.hpp"
+#include "RestHandlers.h"
+#include "RestServer.hpp"
 #include <thread>
 #include "Logger.hpp"
 #include "siilicam-source.h"
@@ -11,7 +12,8 @@ using namespace std;
 OBS_DECLARE_MODULE();
 OBS_MODULE_USE_DEFAULT_LOCALE("siilicam", "en-US");
 
-
+std::shared_ptr<RestServer> server;
+std::thread serverThread;
 
 // Enumeration function for sources
 static void EnumSourcesProc(obs_source_t* parent, obs_source_t* child, void* param) {
@@ -76,9 +78,14 @@ bool obs_module_load(void)
 	Logger::Logger::getInstance().setLogFunction(logging);
 	Logger::init_logging("C:/Users/Simo/AppData/Roaming/log2.log");
 	Logger::log_info("siilicam plugin loaded");
-	blog(LOG_INFO, "siilicam plugin loaded");
-	GetCurrentScenes(); // Print scenes when the plugin is loaded
+	
+	server = std::make_shared<RestServer>(6042);
+	server->addGetHandler("/getSources", getSources);
+	server->addPostHandler("/setNDISource", setSource);
 
+	serverThread = std::thread([]() {
+		server->start();
+		});
 	// Connect to the scene list changed event
 	obs_frontend_add_event_callback(on_event, nullptr);
 	Logger::log_info("siilicam plugin loaded");
@@ -89,6 +96,8 @@ bool obs_module_load(void)
 
 void obs_module_unload(void)
 {
+	server->stop();
+	serverThread.join();
 	NDIlib_destroy();
 	blog(LOG_INFO, "siilicam plugin unloaded");
 }

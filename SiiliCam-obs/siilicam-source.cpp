@@ -19,13 +19,12 @@ static obs_properties_t* custom_get_properties(void* data) {
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
 
     obs_property_t* p = obs_properties_add_list(props, "ndi_source_list", "NDI Sources", OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_STRING);
-    blog(LOG_INFO, "added ndi source list");
-    obs_property_list_add_string(p, "TEST", "TEST");
-    blog(LOG_INFO, "added test");
     for (const auto& source_name : custom->ndiReceiver->getCurrentSources()) {
         blog(LOG_INFO, (std::string("adding source: ") + source_name).c_str());
         obs_property_list_add_string(p, source_name.c_str(), source_name.c_str());
     }
+    obs_property_list_add_string(p, "TEST", "TEST");
+
     return props;
 }
 gs_texture_t* create_solid_color_texture(uint32_t width, uint32_t height, uint32_t color) {
@@ -163,11 +162,14 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     // Initialize text velocity (you can adjust these values)
     data->text_vel.x = -5.0 * 2;
     data->text_vel.y = 8.6 * 2;
+    data->obs_source_name = obs_source_get_name(source);
     std::lock_guard<std::mutex> lock(customDataMutex);
     sharedCustomDataVector.push_back(data);
     blog(LOG_INFO, "going to call update");
     custom_update(data, settings);
     blog(LOG_INFO, "done");
+
+
     return data;
 }
 
@@ -175,6 +177,7 @@ static void custom_destroy(void* data) {
     Logger::log_info("destroy called");
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
     Logger::log_info("going to delete custom");
+    custom->ndiReceiver->stop();
     delete custom;
     Logger::log_info("custom deleted");
     std::lock_guard<std::mutex> lock(customDataMutex);

@@ -9,7 +9,7 @@ set(OBS_FRONTEND_LIB_PATH "C:/Users/Simo/source/repos/obs-studio/build_x64/UI/ob
 set(OBS_GRAPHICS_LIB_PATH "C:/Users/Simo/source/repos/obs-studio/build_x64/UI/obs-frontend-api/Release")
 
 
-add_library (SiiliCam-obs MODULE "siilicam-source.cpp" "SiiliCam-obs.cpp" )
+add_library (SiiliCam-obs MODULE "siilicam-source.cpp" "SiiliCam-obs.cpp"  "include/RestHandlers.h")
 target_include_directories(SiiliCam-obs PRIVATE 
     "${OBS_INCLUDE_PATH}/libobs"
     "${OBS_INCLUDE_PATH}/UI/obs-frontend-api"
