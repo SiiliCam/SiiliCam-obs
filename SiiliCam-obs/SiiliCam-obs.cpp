@@ -22,7 +22,7 @@ void logging(const std::string& logMessage) {
 bool obs_module_load(void)
 {
 	Logger::Logger::getInstance().setLogFunction(logging);
-	Logger::init_logging("C:/Users/Simo/AppData/Roaming/log2.log");
+	Logger::init_logging("siili_log.log");
 	Logger::log_info("siilicam plugin loaded");
 	
 	server = std::make_shared<RestServer>(6042);
