@@ -24,6 +24,7 @@ static obs_properties_t* custom_get_properties(void* data) {
         obs_property_list_add_string(p, source_name.c_str(), source_name.c_str());
     }
     obs_property_list_add_string(p, "TEST", "TEST");
+    obs_properties_add_float_slider(props, "zoom_slider", "Zoom", 0.0, 1.0, 0.01);
 
     return props;
 }
@@ -124,27 +125,31 @@ static void custom_update(void* data, obs_data_t* settings) {
     Logger::log_info("update called");
     blog(LOG_INFO, "update called");
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
-
     blog(LOG_INFO, "getting the ndi source list");
-    custom->selected_ndi_source = obs_data_get_string(settings, "ndi_source_list");
-    if (custom->selected_ndi_source == "TEST") {
-        custom->text_pos.x =custom->width / 2.0;
-        custom->text_pos.y =custom->height / 2.0;
-        blog(LOG_INFO, "stopping frame generation");
-        Logger::log_info("stopping frame generation");
-        custom->ndiReceiver->stopFrameGeneration();
-        Logger::log_info("stopped");
-        blog(LOG_INFO, "stopped frame generation");
+    std::string selectedNdiSource = obs_data_get_string(settings, "ndi_source_list");
+    if (selectedNdiSource != custom->selected_ndi_source) {
+        custom->selected_ndi_source = obs_data_get_string(settings, "ndi_source_list");
+        if (custom->selected_ndi_source == "TEST") {
+            custom->text_pos.x = custom->width / 2.0;
+            custom->text_pos.y = custom->height / 2.0;
+            blog(LOG_INFO, "stopping frame generation");
+            Logger::log_info("stopping frame generation");
+            custom->ndiReceiver->stopFrameGeneration();
+            Logger::log_info("stopped");
+            blog(LOG_INFO, "stopped frame generation");
+        }
+        else {
+            blog(LOG_INFO, "starting frame generation");
+            Logger::log_info("starting frame generation");
+            custom->ndiReceiver->setOutput(custom->selected_ndi_source);
+            custom->ndiReceiver->startFrameGeneration();
+            Logger::log_info("frame generation started");
+            blog(LOG_INFO, "started frame generation");
+        }
+        Logger::log_info("selected ndi source in update:", custom->selected_ndi_source);
     }
-    else {
-        blog(LOG_INFO, "starting frame generation");
-        Logger::log_info("starting frame generation");
-        custom->ndiReceiver->setOutput(custom->selected_ndi_source);
-        custom->ndiReceiver->startFrameGeneration();
-        Logger::log_info("frame generation started");
-        blog(LOG_INFO, "started frame generation");
-    }
-    Logger::log_info("selected ndi source in update:", custom->selected_ndi_source);
+    float zoom_value = obs_data_get_double(settings, "zoom_slider");
+    custom->ndiReceiver->sendMetadata(Zoom{ zoom_value });
 }
 
 static void* custom_create(obs_data_t* settings, obs_source_t* source) {
