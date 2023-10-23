@@ -103,7 +103,7 @@ static void custom_video_render(void* data, gs_effect_t* effect) {
 
         // Use the default effect if none is provided
         effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
-
+        gs_matrix_push();
 
         // Draw the NDI texture
         gs_effect_set_texture(gs_effect_get_param_by_name(effect, "image"), ndi_texture);
