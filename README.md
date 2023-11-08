@@ -19,17 +19,10 @@ The plugin also runs a REST server, allowing you to control it via HTTP requests
 - Windows operating system
 - OBS Studio
 
-## Installation
-
-1. Download the plugin from the Releases page.
-2. Follow the installation guide to add the plugin to OBS.
-
 ## How To Use
 
-1. Open OBS and go to the "Tools" menu.
-2. Select the "SiiliCam-OBS" option.
-3. Add your SiiliCam sources.
-4. Configure and control them as you wish.
+1. Select the "SiiliCam source" in sources.
+2. Configure and control them as you wish.
 
 ## API
 
@@ -48,11 +41,6 @@ SiiliCam-OBS uses [NDIWrapper](https://github.com/SiiliCam/NDIWrapper) for NDI f
 ## Contributing and Support
 
 Feel free to open issues or pull requests if you have suggestions or run into any issues.
-
-
-## Rest-Api
-
-Certainly, here's a Markdown documentation for your API. This assumes that your API is RESTful and communicates over HTTP.
 
 ---
 
