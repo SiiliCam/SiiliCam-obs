@@ -22,6 +22,66 @@ static bool switch_camera_button_clicked(obs_properties_t* props, obs_property_t
     return true; // Return true to indicate that properties should be refreshed (optional).
 }
 
+static bool aspect_ratio_button_clicked(obs_properties_t* props, obs_property_t* property, void* data, int width, int height) {
+    struct custom_data* custom = reinterpret_cast<custom_data*>(data);
+    AspectRatio as{ width, height };
+    custom->ndiReceiver->sendMetadata(as);
+
+    Logger::log_info("sent aspect ratio");
+    return true;
+}
+
+
+static bool set_custom_aspect_ratio_button_clicked(obs_properties_t* props, obs_property_t* property, void* data) {
+    struct custom_data* custom = reinterpret_cast<custom_data*>(data);
+    // Retrieve the obs_source_t* from the source name
+    obs_source_t* source = obs_get_source_by_name(custom->obs_source_name.c_str());
+    if (!source) {
+        // Handle the error: the source could not be found
+        return false;
+    }
+
+    obs_data_t* settings = obs_source_get_settings(source);
+    // Don't forget to release the obs_source_t* when you're done with it
+    obs_source_release(source);
+
+    int width = static_cast<int>(obs_data_get_int(settings, "custom_aspect_ratio_width"));
+    int height = static_cast<int>(obs_data_get_int(settings, "custom_aspect_ratio_height"));
+
+    obs_data_release(settings); // Release the obs_data_t object when done
+
+    AspectRatio as{ width, height };
+    custom->ndiReceiver->sendMetadata(as);
+
+    return true;
+}
+
+// Add aspect ratio properties to the properties list.
+static void add_aspect_ratio_properties(obs_properties_t* props, void* data) {
+    // Standard aspect ratios.
+    obs_properties_add_button(props, "button_16_9", "16:9", [](obs_properties_t* props, obs_property_t* property, void* data) {
+        return aspect_ratio_button_clicked(props, property, data, 16, 9);
+        });
+    obs_properties_add_button(props, "button_9_16", "9:16", [](obs_properties_t* props, obs_property_t* property, void* data) {
+        return aspect_ratio_button_clicked(props, property, data, 9, 16);
+        });
+    obs_properties_add_button(props, "button_4_3", "4:3", [](obs_properties_t* props, obs_property_t* property, void* data) {
+        return aspect_ratio_button_clicked(props, property, data, 4, 3);
+        });
+    obs_properties_add_button(props, "button_3_4", "3:4", [](obs_properties_t* props, obs_property_t* property, void* data) {
+        return aspect_ratio_button_clicked(props, property, data, 3, 4);
+        });
+    obs_properties_add_button(props, "button_default", "default", [](obs_properties_t* props, obs_property_t* property, void* data) {
+        return aspect_ratio_button_clicked(props, property, data, -1, -1);
+        });
+
+    obs_property_t* p_width = obs_properties_add_int(props, "custom_aspect_ratio_width", "Custom Aspect Ratio Width", 1, 9999, 1);
+    obs_property_t* p_height = obs_properties_add_int(props, "custom_aspect_ratio_height", "Custom Aspect Ratio Height", 1, 9999, 1);
+    obs_properties_add_button(props, "button_set_custom", "Set Custom Aspect Ratio", set_custom_aspect_ratio_button_clicked);
+
+}
+
+
 static obs_properties_t* custom_get_properties(void* data) {
     Logger::log_info("custom properties called");
     blog(LOG_INFO, "custom properties called");
@@ -30,6 +90,7 @@ static obs_properties_t* custom_get_properties(void* data) {
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
 
     obs_property_t* p = obs_properties_add_list(props, "ndi_source_list", "NDI Sources", OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_STRING);
+
     for (const auto& source_name : custom->ndiReceiver->getCurrentSources()) {
         blog(LOG_INFO, (std::string("adding source: ") + source_name).c_str());
         obs_property_list_add_string(p, source_name.c_str(), source_name.c_str());
@@ -37,7 +98,7 @@ static obs_properties_t* custom_get_properties(void* data) {
     obs_property_list_add_string(p, "TEST", "TEST");
     obs_properties_add_float_slider(props, "zoom_slider", "Zoom", 0.0, 1.0, 0.01);
     obs_property_t* switch_camera_button = obs_properties_add_button(props, "switch_camera", "Switch Camera", switch_camera_button_clicked);
-
+    add_aspect_ratio_properties(props, data);
     return props;
 }
 gs_texture_t* create_solid_color_texture(uint32_t width, uint32_t height, uint32_t color) {
@@ -127,7 +188,6 @@ static void custom_video_render(void* data, gs_effect_t* effect) {
 
         // Clean up the NDI texture
         gs_texture_destroy(ndi_texture);
-
     }
 }
 
