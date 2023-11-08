@@ -26,33 +26,26 @@ static bool aspect_ratio_button_clicked(obs_properties_t* props, obs_property_t*
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
     AspectRatio as{ width, height };
     custom->ndiReceiver->sendMetadata(as);
-
-    Logger::log_info("sent aspect ratio");
-    return true;
-}
-
-
-static bool set_custom_aspect_ratio_button_clicked(obs_properties_t* props, obs_property_t* property, void* data) {
-    struct custom_data* custom = reinterpret_cast<custom_data*>(data);
-    // Retrieve the obs_source_t* from the source name
     obs_source_t* source = obs_get_source_by_name(custom->obs_source_name.c_str());
     if (!source) {
-        // Handle the error: the source could not be found
+        // Handle the case where the source cannot be found
         return false;
     }
 
     obs_data_t* settings = obs_source_get_settings(source);
-    // Don't forget to release the obs_source_t* when you're done with it
-    obs_source_release(source);
+    custom->aspect_ratio_height = height;
+    custom->aspect_ratio_height = width;
+    if (width > 0 && height > 0) {
 
-    int width = static_cast<int>(obs_data_get_int(settings, "custom_aspect_ratio_width"));
-    int height = static_cast<int>(obs_data_get_int(settings, "custom_aspect_ratio_height"));
+        obs_data_set_int(settings, "aspect_ratio_width", width);
+        obs_data_set_int(settings, "aspect_ratio_height", height);
+    }
+    else {
+        obs_data_set_int(settings, "aspect_ratio_width", 1);
+        obs_data_set_int(settings, "aspect_ratio_height", 1);
+    }
 
-    obs_data_release(settings); // Release the obs_data_t object when done
-
-    AspectRatio as{ width, height };
-    custom->ndiReceiver->sendMetadata(as);
-
+    Logger::log_info("sent aspect ratio");
     return true;
 }
 
@@ -75,12 +68,19 @@ static void add_aspect_ratio_properties(obs_properties_t* props, void* data) {
         return aspect_ratio_button_clicked(props, property, data, -1, -1);
         });
 
-    obs_property_t* p_width = obs_properties_add_int(props, "custom_aspect_ratio_width", "Custom Aspect Ratio Width", 1, 9999, 1);
-    obs_property_t* p_height = obs_properties_add_int(props, "custom_aspect_ratio_height", "Custom Aspect Ratio Height", 1, 9999, 1);
-    obs_properties_add_button(props, "button_set_custom", "Set Custom Aspect Ratio", set_custom_aspect_ratio_button_clicked);
+    // Add an integer slider for width
+    obs_properties_add_int_slider(props, "aspect_ratio_width", "Custom Aspect Ratio Width", 1, 100, 1);
+
+    // Add an integer slider for height
+    obs_properties_add_int_slider(props, "aspect_ratio_height", "Custom Aspect Ratio Height", 1, 100, 1);
+
 
 }
-
+static void custom_get_defaults(obs_data_t* settings) {
+    Logger::log_info("get defaults called");
+    obs_data_set_default_int(settings, "aspect_ratio_width", 50); // Default width
+    obs_data_set_default_int(settings, "aspect_ratio_height", 50); // Default height
+}
 
 static obs_properties_t* custom_get_properties(void* data) {
     Logger::log_info("custom properties called");
@@ -221,7 +221,23 @@ static void custom_update(void* data, obs_data_t* settings) {
         Logger::log_info("selected ndi source in update:", custom->selected_ndi_source);
     }
     float zoom_value = obs_data_get_double(settings, "zoom_slider");
-    custom->ndiReceiver->sendMetadata(Zoom{ zoom_value });
+    if (zoom_value != custom->zoom) {
+        custom->zoom = zoom_value;
+        custom->ndiReceiver->sendMetadata(Zoom{ zoom_value });
+    }
+    int aspectRatioWidth = obs_data_get_int(settings, "aspect_ratio_width");
+    int aspectRatioHeight = obs_data_get_int(settings, "aspect_ratio_height");
+
+    if (aspectRatioWidth != custom->aspect_ratio_width) {
+        custom->aspect_ratio_width = aspectRatioWidth;
+        AspectRatio as = { custom->aspect_ratio_width, custom->aspect_ratio_height };
+        custom->ndiReceiver->sendMetadata(as);
+    }
+    if (aspectRatioHeight != custom->aspect_ratio_height) {
+        custom->aspect_ratio_height = aspectRatioHeight;
+        AspectRatio as = { custom->aspect_ratio_width, custom->aspect_ratio_height };
+        custom->ndiReceiver->sendMetadata(as);
+    }
 }
 
 static void* custom_create(obs_data_t* settings, obs_source_t* source) {
@@ -280,6 +296,7 @@ struct obs_source_info siilicam_source_info = {
     .destroy = custom_destroy,
     .get_width = custom_get_width,       // Add this line
     .get_height = custom_get_height,
+    .get_defaults = custom_get_defaults,
     .get_properties = custom_get_properties,
     .update = custom_update,
     .video_render = custom_video_render,
