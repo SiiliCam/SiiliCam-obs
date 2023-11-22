@@ -95,7 +95,6 @@ static obs_properties_t* custom_get_properties(void* data) {
         blog(LOG_INFO, (std::string("adding source: ") + source_name).c_str());
         obs_property_list_add_string(p, source_name.c_str(), source_name.c_str());
     }
-    obs_property_list_add_string(p, "TEST", "TEST");
     obs_properties_add_float_slider(props, "zoom_slider", "Zoom", 0.0, 1.0, 0.01);
     obs_property_t* switch_camera_button = obs_properties_add_button(props, "switch_camera", "Switch Camera", switch_camera_button_clicked);
     add_aspect_ratio_properties(props, data);
@@ -308,6 +307,12 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_source_output_video(data->source, &obs_frame);
         data->height = image.height;
         data->width = image.width;
+        });
+    data->ndiReceiver->setVideoConnectedCallback([data](Image img) {
+        obs_source_set_enabled(data->source, true);
+        });
+    data->ndiReceiver->setVideoDisconnectedCallback([data]() {
+        obs_source_set_enabled(data->source, false);
         });
     return data;
 }
