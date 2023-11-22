@@ -240,6 +240,7 @@ static void custom_update(void* data, obs_data_t* settings) {
     }
 }
 
+
 static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     Logger::log_info("starting the Siilicam OBS Source");
     blog(LOG_INFO, "starting the Siilicam OBS Source");
@@ -251,7 +252,7 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     // Initialize text position in the center of the source
     data->text_pos.x =data->width / 2.0;
     data->text_pos.y =data->height / 2.0;
-
+    data->source = source;
     // Initialize text velocity (you can adjust these values)
     data->text_vel.x = -5.0 * 2;
     data->text_vel.y = 8.6 * 2;
@@ -261,8 +262,53 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     blog(LOG_INFO, "going to call update");
     custom_update(data, settings);
     blog(LOG_INFO, "done");
+    
+    data->ndiReceiver->addAudioCallback([data](common_types::Audio audio) {
 
+        struct obs_source_audio obs_audio_frame;
+        memset(&obs_audio_frame, 0, sizeof(obs_audio_frame));
 
+        for (int i = 0; i < audio.channels; ++i) {
+            obs_audio_frame.data[i] =
+                (uint8_t*)audio.data.data() +
+                (i * audio.noSamples*sizeof(float));
+        }
+
+        obs_audio_frame.frames = audio.noSamples;
+        obs_audio_frame.speakers = SPEAKERS_STEREO; // Adjust based on actual channel count
+        obs_audio_frame.samples_per_sec = audio.sampleRate;
+        obs_audio_frame.format = AUDIO_FORMAT_FLOAT;
+        obs_audio_frame.timestamp = audio.timestamp * 100;
+        // Output audio to OBS
+        auto obs_source_name = obs_source_get_name(data->source);
+
+        obs_source_output_audio(data->source, &obs_audio_frame);
+        });
+    data->ndiReceiver->addFrameCallback([data](common_types::Image image) {
+        struct obs_source_frame obs_frame;
+        memset(&obs_frame, 0, sizeof(struct obs_source_frame));
+
+        // Assuming the image format is RGBA for this example, modify as needed
+        obs_frame.format = VIDEO_FORMAT_RGBA;
+        obs_frame.width = image.width;
+        obs_frame.height = image.height;
+        obs_frame.timestamp = image.timestamp;
+        // Assuming the data is tightly packed, modify if stride (bytes per line) is different
+        obs_frame.linesize[0] = image.width * 4; // RGBA is 4 bytes per pixel
+
+        // You need to ensure that the data lives as long as OBS needs it to,
+        // which may involve copying it to a persistent buffer or ensuring
+        // your image object lives long enough.
+        obs_frame.data[0] = image.data.data();
+
+        // Flip the image vertically if necessary
+        obs_frame.flip = false; // Set to true if the image is upside down
+
+        // Output the frame to OBS
+        obs_source_output_video(data->source, &obs_frame);
+        data->height = image.height;
+        data->width = image.width;
+        });
     return data;
 }
 
@@ -290,7 +336,7 @@ static uint32_t custom_get_height(void* data) {
 struct obs_source_info siilicam_source_info = {
     .id = "siilicamobs_source",
     .type = OBS_SOURCE_TYPE_INPUT,
-    .output_flags = OBS_SOURCE_VIDEO,
+    .output_flags = OBS_SOURCE_ASYNC_VIDEO | OBS_SOURCE_AUDIO,
     .get_name = [](void*) -> const char* { return "Siili Cam Source"; },
     .create = custom_create,
     .destroy = custom_destroy,
@@ -299,6 +345,6 @@ struct obs_source_info siilicam_source_info = {
     .get_defaults = custom_get_defaults,
     .get_properties = custom_get_properties,
     .update = custom_update,
-    .video_render = custom_video_render,
+    //.video_render = custom_video_render,
     // ... [Other necessary callbacks and fields]
 };
