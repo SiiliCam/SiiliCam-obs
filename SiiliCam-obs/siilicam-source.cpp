@@ -241,6 +241,7 @@ static void custom_update(void* data, obs_data_t* settings) {
 
 
 static void* custom_create(obs_data_t* settings, obs_source_t* source) {
+
     Logger::log_info("starting the Siilicam OBS Source");
     blog(LOG_INFO, "starting the Siilicam OBS Source");
     struct custom_data* data = new custom_data;
@@ -261,17 +262,13 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     blog(LOG_INFO, "going to call update");
     custom_update(data, settings);
     blog(LOG_INFO, "done");
-    
     data->ndiReceiver->addAudioCallback([data](common_types::Audio audio) {
 
         struct obs_source_audio obs_audio_frame;
         memset(&obs_audio_frame, 0, sizeof(obs_audio_frame));
-
-        for (int i = 0; i < audio.channels; ++i) {
-            obs_audio_frame.data[i] =
-                (uint8_t*)audio.data.data() +
-                (i * audio.noSamples*sizeof(float));
-        }
+        std::vector<float> vec(audio.noSamples * audio.channels, 0);
+        // Assign the deinterleaved buffers to the OBS audio frame
+        obs_audio_frame.data[0] = reinterpret_cast<const uint8_t*>(audio.data.data());
 
         obs_audio_frame.frames = audio.noSamples;
         obs_audio_frame.speakers = SPEAKERS_STEREO; // Adjust based on actual channel count
@@ -283,7 +280,7 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
 
         obs_source_output_audio(data->source, &obs_audio_frame);
         });
-    data->ndiReceiver->addFrameCallback([data](common_types::Image image) {
+    /*data->ndiReceiver->addFrameCallback([data](common_types::Image image) {
         struct obs_source_frame obs_frame;
         memset(&obs_frame, 0, sizeof(struct obs_source_frame));
 
@@ -302,12 +299,12 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
 
         // Flip the image vertically if necessary
         obs_frame.flip = false; // Set to true if the image is upside down
-
+        
         // Output the frame to OBS
         obs_source_output_video(data->source, &obs_frame);
         data->height = image.height;
         data->width = image.width;
-        });
+        });*/
     data->ndiReceiver->setVideoConnectedCallback([data](Image img) {
         obs_source_set_enabled(data->source, true);
         });
@@ -341,7 +338,7 @@ static uint32_t custom_get_height(void* data) {
 struct obs_source_info siilicam_source_info = {
     .id = "siilicamobs_source",
     .type = OBS_SOURCE_TYPE_INPUT,
-    .output_flags = OBS_SOURCE_ASYNC_VIDEO | OBS_SOURCE_AUDIO,
+    .output_flags = OBS_SOURCE_VIDEO | OBS_SOURCE_AUDIO | OBS_SOURCE_DO_NOT_DUPLICATE | OBS_SOURCE_CAP_DONT_SHOW_PROPERTIES,
     .get_name = [](void*) -> const char* { return "Siili Cam Source"; },
     .create = custom_create,
     .destroy = custom_destroy,
@@ -350,6 +347,6 @@ struct obs_source_info siilicam_source_info = {
     .get_defaults = custom_get_defaults,
     .get_properties = custom_get_properties,
     .update = custom_update,
-    //.video_render = custom_video_render,
+    .video_render = custom_video_render,
     // ... [Other necessary callbacks and fields]
 };
