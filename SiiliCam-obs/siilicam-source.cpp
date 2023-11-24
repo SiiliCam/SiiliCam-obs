@@ -295,6 +295,7 @@ struct obs_source_info siilicam_source_info = {
     .get_defaults = custom_get_defaults,
     .get_properties = custom_get_properties,
     .update = custom_update,
+    .icon_type = OBS_ICON_TYPE_CAMERA,
     //.video_render = custom_video_render,
     // ... [Other necessary callbacks and fields]
 };
