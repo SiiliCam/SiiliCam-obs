@@ -14,7 +14,7 @@ set(BUILD_ONLY_LIB ON)
 
 set(NDI_SDK_PATH "C:/Program Files/NDI/NDI 5 SDK")
 
-project ("SiiliCam-obs" VERSION 1.0.0 LANGUAGES C CXX)
+project ("SiiliCam-obs" VERSION 1.0.6 LANGUAGES C CXX)
 
 set(Boost_DIR "C:/local/boost_1_83_0/stage/lib/cmake/Boost-1.83.0/")
 SET(Boost_ADDITIONAL_VERSIONS 1.83.0)
@@ -29,3 +29,27 @@ find_package(Threads REQUIRED)
 
 # Include sub-projects.
 add_subdirectory ("SiiliCam-obs")
+set(PACKAGE_FILES
+    "${CMAKE_BINARY_DIR}/SiiliCam-obs/Processing.NDI.Lib.x64.dll"
+    "${CMAKE_BINARY_DIR}/SiiliCam-obs/SiiliCam-obs.dll"
+    "${CMAKE_BINARY_DIR}/SiiliCam-obs/SiiliCam-obs.dll.manifest"
+    "${CMAKE_BINARY_DIR}/SiiliCam-obs/SiiliCam-obs.exp"
+    "${CMAKE_BINARY_DIR}/SiiliCam-obs/SiiliCam-obs.lib"
+)
+
+# Define the output directory
+set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/siilicam-obs-${PROJECT_VERSION}/obs-plugins/64bit")
+# Custom target for packaging
+add_custom_target(package_obs_plugin ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PACKAGE_FILES} "${OUTPUT_DIR}"
+    COMMENT "Packaging OBS Plugin"
+)
+set(ZIP_FILE_NAME "siilicam-obs-${PROJECT_VERSION}.zip")
+add_custom_command(
+    TARGET package_obs_plugin POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${ZIP_FILE_NAME}" --format=zip "${OUTPUT_DIR}"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Zipping OBS Plugin Package"
+)
+add_dependencies(package_obs_plugin SiiliCam-obs)

@@ -34,6 +34,7 @@ bool obs_module_load(void)
 		});
 	// Connect to the scene list changed event
 	Logger::log_info("siilicam plugin loaded");
+	Logger::log_info("size of source:", sizeof(siilicam_source_info));
 	obs_register_source(&siilicam_source_info);
 	return true;
 }

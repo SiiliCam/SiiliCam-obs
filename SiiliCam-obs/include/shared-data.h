@@ -9,8 +9,6 @@
 struct custom_data {
     std::string obs_source_name;
     std::string selected_ndi_source; // The NDI source selected by the user
-    vec2 text_pos; // Current position of the text
-    vec2 text_vel; // Velocity of the text (how much it moves per frame)
     obs_source_t* source;
     std::shared_ptr<NDIReceiver> ndiReceiver;
     uint32_t width = 1200;  // Default values
