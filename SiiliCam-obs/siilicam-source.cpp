@@ -208,6 +208,10 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     blog(LOG_INFO, "going to call update");
     custom_update(data, settings);
     blog(LOG_INFO, "done");
+
+    // this magic command will make the pauses in timestamps not make delay in the source output
+    obs_source_set_async_unbuffered(data->source, true);
+
     data->ndiReceiver->addAudioCallback([data](common_types::Audio audio) {
 
         struct obs_source_audio obs_audio_frame;
@@ -220,7 +224,8 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_audio_frame.speakers = SPEAKERS_STEREO; // Adjust based on actual channel count
         obs_audio_frame.samples_per_sec = audio.sampleRate;
         obs_audio_frame.format = AUDIO_FORMAT_FLOAT;
-        obs_audio_frame.timestamp = static_cast<uint64_t>(audio.timestamp / 1000.0f); // to microseconds
+        obs_audio_frame.timestamp = audio.timestamp;
+ 
         // Output audio to OBS
         auto obs_source_name = obs_source_get_name(data->source);
 
@@ -233,7 +238,8 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_frame.format = VIDEO_FORMAT_RGBA;
         obs_frame.width = image.width;
         obs_frame.height = image.height;
-        obs_frame.timestamp = static_cast<uint64_t>(image.timestamp / 1000.0f); // to microseconds
+        obs_frame.timestamp = image.timestamp;
+
         // Assuming the data is tightly packed, modify if stride (bytes per line) is different
         obs_frame.linesize[0] = image.width * 4; // RGBA is 4 bytes per pixel
 
