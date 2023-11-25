@@ -220,8 +220,7 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_audio_frame.speakers = SPEAKERS_STEREO; // Adjust based on actual channel count
         obs_audio_frame.samples_per_sec = audio.sampleRate;
         obs_audio_frame.format = AUDIO_FORMAT_FLOAT;
-
-        obs_audio_frame.timestamp = audio.timestamp * 100;
+        obs_audio_frame.timestamp = static_cast<uint64_t>(audio.timestamp / 1000.0f); // to microseconds
         // Output audio to OBS
         auto obs_source_name = obs_source_get_name(data->source);
 
@@ -230,12 +229,11 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     data->ndiReceiver->addFrameCallback([data](common_types::Image image) {
         struct obs_source_frame obs_frame;
         memset(&obs_frame, 0, sizeof(struct obs_source_frame));
-
         // Assuming the image format is RGBA for this example, modify as needed
         obs_frame.format = VIDEO_FORMAT_RGBA;
         obs_frame.width = image.width;
         obs_frame.height = image.height;
-        obs_frame.timestamp = image.timestamp * 100;
+        obs_frame.timestamp = static_cast<uint64_t>(image.timestamp / 1000.0f); // to microseconds
         // Assuming the data is tightly packed, modify if stride (bytes per line) is different
         obs_frame.linesize[0] = image.width * 4; // RGBA is 4 bytes per pixel
 
@@ -248,10 +246,9 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_frame.flip = false; // Set to true if the image is upside down
         
         // Output the frame to OBS
+        obs_source_output_video(data->source, &obs_frame);
         data->height = image.height;
         data->width = image.width;
-        obs_source_output_video(data->source, &obs_frame);
-
         });
     data->ndiReceiver->setVideoConnectedCallback([data](Image img) {
         obs_source_set_enabled(data->source, true);
