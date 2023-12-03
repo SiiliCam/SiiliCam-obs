@@ -239,7 +239,6 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
         obs_frame.width = image.width;
         obs_frame.height = image.height;
         obs_frame.timestamp = image.timestamp;
-
         // Assuming the data is tightly packed, modify if stride (bytes per line) is different
         obs_frame.linesize[0] = image.width * 4; // RGBA is 4 bytes per pixel
 

@@ -53,3 +53,18 @@ add_custom_command(
     COMMENT "Zipping OBS Plugin Package"
 )
 add_dependencies(package_obs_plugin SiiliCam-obs)
+
+# Specify the files to install
+install(TARGETS SiiliCam-obs DESTINATION obs-plugins/64bit)
+install(FILES "${CMAKE_BINARY_DIR}/SiiliCam-obs/Processing.NDI.Lib.x64.dll" DESTINATION obs-plugins/64bit)
+# Add any other necessary files
+# Custom target for packaging
+string(REPLACE "/" "\\" NSIS_FILE_PATH_PREFIX "${CMAKE_BINARY_DIR}/SiiliCam-obs/")
+string(REPLACE "/" "\\" RES_FILE_PATH_PREFIX "${CMAKE_SOURCE_DIR}/res/")
+
+string(REPLACE "/" "\\" RES_OUTPUT_DIR "${CMAKE_BINARY_DIR}/")
+add_custom_target(build_installer
+    COMMAND "C:/Program Files (x86)/NSIS/makensis" -DPROJECT_VERSION=${PROJECT_VERSION} "-DOUTPUT_DIR=${RES_OUTPUT_DIR}" "-DFILE_PATH_PREFIX=${NSIS_FILE_PATH_PREFIX}" "-DICO_PATH_PREFIX=${RES_FILE_PATH_PREFIX}" SiiliCamInstaller.nsi
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building NSIS installer for SiiliCam OBS Plugin"
+)
