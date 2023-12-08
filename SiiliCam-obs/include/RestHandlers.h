@@ -16,6 +16,7 @@ Response getSources(Request req) {
 		boost::property_tree::ptree sourcesArray;
 		for (auto& data : sharedCustomDataVector) {
 			boost::property_tree::ptree sourceNode;
+			data->obs_source_name = obs_source_get_name(data->source);
 			sourceNode.put("obs_source_name", data->obs_source_name);
 			sourceNode.put("selected_ndi_source", data->selected_ndi_source);
 

@@ -159,6 +159,7 @@ static void custom_update(void* data, obs_data_t* settings) {
     struct custom_data* custom = reinterpret_cast<custom_data*>(data);
     blog(LOG_INFO, "getting the ndi source list");
     std::string selectedNdiSource = obs_data_get_string(settings, "ndi_source_list");
+    std::lock_guard<std::mutex> lock(customDataMutex);
     if (selectedNdiSource != custom->selected_ndi_source) {
         custom->selected_ndi_source = obs_data_get_string(settings, "ndi_source_list");
 
@@ -201,10 +202,12 @@ static void* custom_create(obs_data_t* settings, obs_source_t* source) {
     blog(LOG_INFO, "ndi receiver started");
     // Initialize text position in the center of the source
     data->source = source;
+    {
 
-    data->obs_source_name = obs_source_get_name(source);
-    std::lock_guard<std::mutex> lock(customDataMutex);
-    sharedCustomDataVector.push_back(data);
+        std::lock_guard<std::mutex> lock(customDataMutex);
+        data->obs_source_name = obs_source_get_name(source);
+        sharedCustomDataVector.push_back(data);
+    }
     blog(LOG_INFO, "going to call update");
     custom_update(data, settings);
     blog(LOG_INFO, "done");
