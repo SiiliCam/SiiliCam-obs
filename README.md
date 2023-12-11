@@ -140,3 +140,107 @@ This REST API is a part of the SiiliCam-OBS plugin and allows you to get informa
 
 **Note**: If the source is trying to be set and it's non-existent, the receiver will wait until it comes up.
 
+---
+
+### Set First Matching NDI Source
+
+- **Endpoint**: `POST localhost:6042/setFirstMatchingNDISource`
+- **Description**: Sets the first matching NDI source for an existing OBS source based on a substring match.
+- **Request Body**: JSON format
+- **Response Format**: JSON
+- **Response Codes**: 
+  - 200 OK
+  - 404 Not Found (OBS source or matching NDI source not found)
+  - 500 Internal Server Error (Failed to set NDI source)
+
+#### Example Request
+
+```json
+{
+    "obs_source_name": "Siili Cam Source",
+    "ndi_source": "LOCALHOST"
+}
+```
+
+#### Example Responses
+
+**Successful Update**
+
+```json
+{
+    "message": "Source updated successfully"
+}
+```
+
+**Failed Update**
+
+```json
+{
+    "message": "Failed to set NDI source"
+}
+```
+
+**OBS Source Not Found**
+
+```json
+{
+    "message": "OBS source not found"
+}
+```
+
+**Matching NDI Source Not Found**
+
+```json
+{
+    "message": "Matching NDI source not found"
+}
+```
+
+---
+
+### Set Camera Visibility
+
+- **Endpoint**: `POST localhost:6042/setCameraVisibility`
+- **Description**: Sets the visibility of an existing OBS source.
+- **Request Body**: JSON format
+- **Response Format**: JSON
+- **Response Codes**: 
+  - 200 OK
+  - 404 Not Found (OBS source not found)
+
+#### Example Request
+
+```json
+{
+    "obs_source_name": "Siili Cam Source",
+    "visibility": true
+}
+```
+
+#### Example Responses
+
+**Source Shown Successfully**
+
+```json
+{
+    "message": "Source shown successfully"
+}
+```
+
+**Source Hidden Successfully**
+
+```json
+{
+    "message": "Source hidden successfully"
+}
+```
+
+**OBS Source Not Found**
+
+```json
+{
+    "message": "OBS source not found"
+}
+```
+
+---

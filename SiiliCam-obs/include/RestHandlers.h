@@ -75,3 +75,89 @@ Response setSource(Request req) {
 		return Response{ "Failed to set NDI source", 500 };  // Internal Server Error
 	}
 }
+
+Response setFirstMatchingNdiSource(Request req) {
+	Logger::log_info("set first matching NDI source called");
+	std::string requestBody = req.body();
+	boost::property_tree::ptree pt;
+	std::stringstream ss(requestBody);
+	boost::property_tree::read_json(ss, pt);
+	std::string obs_source_name = pt.get<std::string>("obs_source_name");
+	std::string ndi_source_substring = pt.get<std::string>("ndi_source");
+
+	// Check if OBS source exists
+	custom_data* foundCustomData = nullptr;
+	{
+		std::lock_guard<std::mutex> lock(customDataMutex);
+		for (auto& data : sharedCustomDataVector) {
+			if (data->obs_source_name == obs_source_name) {
+				foundCustomData = data;
+				break;
+			}
+		}
+	}
+
+	if (!foundCustomData) {
+		return Response{ "OBS source not found", 404 };
+	}
+
+	// Find the first matching NDI source
+	std::vector<std::string> availableNdiSources = foundCustomData->ndiReceiver->getCurrentSources();
+	std::string matchedNdiSource;
+	for (const auto& src : availableNdiSources) {
+		if (src.find(ndi_source_substring) != std::string::npos) {
+			matchedNdiSource = src;
+			break;
+		}
+	}
+
+	if (matchedNdiSource.empty()) {
+
+		obs_source_set_enabled(foundCustomData->source, false);
+		return Response{ "Matching NDI source not found", 404 };
+	}
+
+	// Set the found NDI source and update custom data
+	if (foundCustomData->ndiReceiver->setOutput(matchedNdiSource)) {
+		foundCustomData->selected_ndi_source = matchedNdiSource;
+		obs_source_set_enabled(foundCustomData->source, true);
+		return Response{ "Source updated successfully", 200 };
+	}
+	else {
+
+		obs_source_set_enabled(foundCustomData->source, false);
+		return Response{ "Failed to set NDI source", 500 };  // Internal Server Error
+	}
+}
+
+Response setCameraVisibility(Request req) {
+	Logger::log_info("set camera visibility called");
+	std::string requestBody = req.body();
+	boost::property_tree::ptree pt;
+	std::stringstream ss(requestBody);
+	boost::property_tree::read_json(ss, pt);
+	std::string obs_source_name = pt.get<std::string>("obs_source_name");
+	bool visible = pt.get<bool>("visibility");
+
+	// Check if OBS source exists
+	custom_data* foundCustomData = nullptr;
+	{
+		std::lock_guard<std::mutex> lock(customDataMutex);
+		for (auto& data : sharedCustomDataVector) {
+			if (data->obs_source_name == obs_source_name) {
+				foundCustomData = data;
+				break;
+			}
+		}
+	}
+
+	if (!foundCustomData) {
+		return Response{ "OBS source not found", 404 };
+	}
+
+	Logger::log_info("visibility is:", std::to_string(visible));
+	// Set the visibility of the OBS source
+	obs_source_set_enabled(foundCustomData->source, visible);
+
+	return Response{ visible ? "Source shown successfully" : "Source hidden successfully", 200 };
+}

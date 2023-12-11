@@ -28,6 +28,8 @@ bool obs_module_load(void)
 	server = std::make_shared<RestServer>(6042);
 	server->addGetHandler("/getSources", getSources);
 	server->addPostHandler("/setNDISource", setSource);
+	server->addPostHandler("/setFirstMatchingNDISource", setFirstMatchingNdiSource);
+	server->addPostHandler("/siiliSourceVisibility", setCameraVisibility);
 
 	serverThread = std::thread([]() {
 		server->start();
