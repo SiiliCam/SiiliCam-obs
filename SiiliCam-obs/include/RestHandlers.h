@@ -112,20 +112,15 @@ Response setFirstMatchingNdiSource(Request req) {
 	}
 
 	if (matchedNdiSource.empty()) {
-
-		obs_source_set_enabled(foundCustomData->source, false);
 		return Response{ "Matching NDI source not found", 404 };
 	}
 
 	// Set the found NDI source and update custom data
 	if (foundCustomData->ndiReceiver->setOutput(matchedNdiSource)) {
 		foundCustomData->selected_ndi_source = matchedNdiSource;
-		obs_source_set_enabled(foundCustomData->source, true);
 		return Response{ "Source updated successfully", 200 };
 	}
 	else {
-
-		obs_source_set_enabled(foundCustomData->source, false);
 		return Response{ "Failed to set NDI source", 500 };  // Internal Server Error
 	}
 }
