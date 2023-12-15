@@ -244,3 +244,44 @@ This REST API is a part of the SiiliCam-OBS plugin and allows you to get informa
 ```
 
 ---
+
+### Set Text Source
+
+- **Endpoint**: `POST localhost:6042/setText`
+- **Description**: Updates the text of a specified text source in OBS.
+- **Request Body**: JSON format
+- **Response Format**: JSON
+- **Response Codes**: 
+  - 200 OK
+  - 404 Not Found (Text source not found or invalid type)
+
+#### Example Request
+
+```json
+{
+    "textSourceName": "Siili Text Source",
+    "text": "New text content"
+}
+```
+
+#### Example Responses
+
+**Text Updated Successfully**
+
+```json
+{
+    "message": "Text updated successfully"
+}
+```
+
+**Text Source Not Found or Invalid Type**
+
+In case the specified text source is not found or is of an invalid type, the API will return an error message. Unfortunately, the specific error message isn't provided in the original code, so this part is a bit generic.
+
+```json
+{
+    "message": "Text source not found or invalid type"
+}
+```
+
+---

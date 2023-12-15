@@ -30,7 +30,7 @@ bool obs_module_load(void)
 	server->addPostHandler("/setNDISource", setSource);
 	server->addPostHandler("/setFirstMatchingNDISource", setFirstMatchingNdiSource);
 	server->addPostHandler("/siiliSourceVisibility", setCameraVisibility);
-
+	server->addPostHandler("/setText", setTextSource);
 	serverThread = std::thread([]() {
 		server->start();
 		});

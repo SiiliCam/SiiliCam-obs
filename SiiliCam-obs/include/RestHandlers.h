@@ -124,6 +124,28 @@ Response setFirstMatchingNdiSource(Request req) {
 		return Response{ "Failed to set NDI source", 500 };  // Internal Server Error
 	}
 }
+void updateTextSource(const std::string& sourceName, const std::string& newText) {
+	obs_source_t* source = obs_get_source_by_name(sourceName.c_str());
+	if (source) {
+		const char* source_id = obs_source_get_id(source);
+
+		// Check against the updated source ID
+		if (strcmp(source_id, "text_gdiplus") == 0 || strcmp(source_id, "text_ft2_source") == 0 || strcmp(source_id, "text_gdiplus_v2") == 0) {
+			obs_data_t* settings = obs_source_get_settings(source);
+			obs_data_set_string(settings, "text", newText.c_str());
+			obs_source_update(source, settings);
+			obs_data_release(settings);
+		}
+		else {
+			Logger::log_error("Source not a valid text type: ", sourceName, ", ID: ", source_id);
+		}
+		obs_source_release(source);
+	}
+	else {
+		Logger::log_error("Text source not found: ", sourceName);
+	}
+}
+
 
 Response setCameraVisibility(Request req) {
 	Logger::log_info("set camera visibility called");
@@ -155,4 +177,20 @@ Response setCameraVisibility(Request req) {
 	obs_source_set_enabled(foundCustomData->source, visible);
 
 	return Response{ visible ? "Source shown successfully" : "Source hidden successfully", 200 };
+}
+
+Response setTextSource(Request req) {
+	Logger::log_info("setTextSource called");
+
+	std::string requestBody = req.body();
+	boost::property_tree::ptree pt;
+	std::stringstream ss(requestBody);
+	boost::property_tree::read_json(ss, pt);
+
+	std::string textSourceName = pt.get<std::string>("textSourceName");
+	std::string newText = pt.get<std::string>("text");
+
+	updateTextSource(textSourceName, newText);
+
+	return Response{ "Text updated successfully", 200 };
 }
