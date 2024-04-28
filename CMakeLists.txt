@@ -12,9 +12,9 @@ endif()
 
 set(BUILD_ONLY_LIB ON)
 
-set(NDI_SDK_PATH "C:/Program Files/NDI/NDI 5 SDK")
+set(NDI_SDK_PATH "C:/Program Files/NDI/NDI 6 SDK")
 
-project ("SiiliCam-obs" VERSION 1.0.12 LANGUAGES C CXX)
+project ("SiiliCam-obs" VERSION 1.0.14 LANGUAGES C CXX)
 
 set(Boost_DIR "C:/local/boost_1_83_0/stage/lib/cmake/Boost-1.83.0/")
 SET(Boost_ADDITIONAL_VERSIONS 1.83.0)
