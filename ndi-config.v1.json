@@ -1,0 +1,10 @@
+{
+    "ndi": {
+        "groups": {
+            "recv": "SiiliCam"
+        },
+        "networks": {
+            "discovery": "127.0.0.1"
+        }
+    }
+}
